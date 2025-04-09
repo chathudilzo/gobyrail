@@ -30,10 +30,12 @@ public class UserService {
 
     private final String SECRET_KEY = "yoursecretkeyshouldbe256bitslong1235687777777777777777777777777777777777777";
 
-    public String register(UserRequest userRequest) {
+    public ResponseEntity<Map<String,String>> register(UserRequest userRequest) {
         Optional<User> existingUser = userRepository.findByEmail(userRequest.getEmail());
+        Map<String,String> response=new HashMap<>();
         if (existingUser.isPresent()) {
-            return "Email is already in use";
+            response.put("message":"Email already in use!")
+            return new ResponseEntity<>(response,HttpStatus.CONFLICT);
         }
 
 
@@ -48,9 +50,12 @@ public class UserService {
         try {
             userRepository.save(user);
         } catch (DataIntegrityViolationException e) {
-            return  "Error saving user to the database" +e ;
+            response.put("message":"Error saving user to the database: "+e.getMessage());
+            return  new ResponseEntity<>(response,HttpStatus.INTERNAL_SERVER_ERROR);
         }
-        return "User registered successfully";
+
+        response.put("message":"User registered successfully!");
+        return new ResponseEntity<>(response,HttpStatus.CREATED);
     }
 
 
